@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="fr.univcotedazur.kairos.webots.polycreate.controler/src">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/Users/doudo/Documents/GitHub/polytechWebotsController/fr.univcotedazur.kairos.webots.polycreate.controler/webotsLibs"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="fr.univcotedazur.kairos.webots.polycreate.controler/webotsLibs/Controller.jar"/>
+	<classpathentry kind="lib" path="fr.univcotedazur.kairos.webots.polycreate.controler/webotsLibs/vehicle.jar"/>
+	<classpathentry kind="output" path="fr.univcotedazur.kairos.webots.polycreate.controler/bin"/>
+</classpath>

@@ -314,6 +314,7 @@ public class PolyCreateControler extends Supervisor {
 					controler.goBackward();
 					controler.passiveWait(0.5);
 					controler.turn(Math.PI * controler.randdouble()+0.6);
+
 				} else if (controler.isThereCollisionAtRight()|| controler.frontRightDistanceSensor.getValue() < 250 || controler.frontDistanceSensor.getValue() < 250) {
 					System.out.println("          Right obstacle detected\n");
 					controler.goBackward();
