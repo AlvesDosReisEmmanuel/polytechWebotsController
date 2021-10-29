@@ -1,0 +1,33 @@
+GeneratorModel for yakindu::java {
+
+	const PROJECT : string = "polytechWebotsController"
+
+	const FOLDER : string = "src-gen"
+
+	statechart Statechart {
+
+		feature Outlet {
+			targetProject = PROJECT
+			targetFolder = FOLDER
+			libraryTargetFolder = "src"
+		}
+		
+		feature OutEventAPI {
+			observables = true
+			getters = false
+		}
+		feature Naming {
+			libraryPackage = "com.yakindu.core"
+			basePackage = "fr.univcotedazur.kairos.webots.polycreate.statechart"
+			typeName = "ControllerStateMachine"
+		}
+
+		feature GeneralFeatures {
+			RuntimeService = false
+			TimerService = true
+			synchronized = true
+			runnable = false
+		}
+		
+	}
+}

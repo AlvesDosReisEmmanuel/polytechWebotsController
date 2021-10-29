@@ -11,6 +11,7 @@
 
 package fr.univcotedazur.kairos.webots.polycreate.controler;
 
+
 import java.util.Random;
 
 //import org.eclipse.january.dataset.Dataset;
@@ -29,6 +30,16 @@ import com.cyberbotics.webots.controller.Receiver;
 import com.cyberbotics.webots.controller.Robot;
 import com.cyberbotics.webots.controller.Supervisor;
 import com.cyberbotics.webots.controller.TouchSensor;
+import com.yakindu.core.rx.Observer;
+
+import fr.univcotedazur.kairos.webots.polycreate.statechart.ControllerStateMachine;
+
+class MyObserver implements Observer<Void>{
+@Override
+	public void next(Void value) {
+		
+	}
+}
 
 public class PolyCreateControler extends Supervisor {
 
@@ -40,6 +51,7 @@ public class PolyCreateControler extends Supervisor {
 	static double WHEEL_RADIUS = 0.031;
 	static double AXLE_LENGTH = 0.271756;
 	static double ENCODER_RESOLUTION = 507.9188;
+	protected static ControllerStateMachine theFSM;
 
 	/**
 	 * the inkEvaporation parameter in the WorldInfo element of the robot scene may be interesting to access
@@ -85,6 +97,15 @@ public class PolyCreateControler extends Supervisor {
 	
 	public 	int timestep = Integer.MAX_VALUE;
 	public 	Random random = new Random();
+	
+	boolean isThereObstacle() {
+		if (isThereCollisionAtLeft() ||frontLeftDistanceSensor.getValue() < 250
+				||isThereCollisionAtRight()||frontRightDistanceSensor.getValue() < 250 || 
+				frontDistanceSensor.getValue() < 250) {
+			return true;
+		}
+		else return false;
+	}
 
 
 
@@ -156,6 +177,39 @@ public class PolyCreateControler extends Supervisor {
 		gps.enable(timestep);
 		
 		PolyCreateControler ctrl = this;
+		
+		theFSM=new ControllerStateMachine();
+		theFSM.enter();
+		
+		
+		theFSM.getCleaning().subscribe(new MyObserver() {
+			@Override
+			public void next(Void value) {
+				//System.out.println("BIP");
+				goForward();
+				while(!isThereObstacle()) {
+					passiveWait(0.1);
+				}
+				theFSM.raiseObstacleDetected();
+				
+			}
+		});
+		
+		theFSM.getDodgeObstacle().subscribe(new MyObserver(){
+			@Override 
+			public void next(Void value) {
+				while(isThereObstacle()) {
+					goBackward();
+					passiveWait(0.5);
+					turn(45*Math.PI/180);
+					passiveWait(0.1);
+				}
+				theFSM.raiseNoObstacle();
+			}
+			
+		});
+		
+		
 		Runtime.getRuntime().addShutdownHook(new Thread()
 		{
 			@Override
@@ -165,6 +219,8 @@ public class PolyCreateControler extends Supervisor {
 				ctrl.delete();
 			}
 		});
+		
+		
 	}
 
 
@@ -265,21 +321,26 @@ public class PolyCreateControler extends Supervisor {
 
 	public static void main(String[] args) {
 		PolyCreateControler controler = new PolyCreateControler();
-
+		theFSM.raiseStart();
+		/**
 		try {
 			controler.openGripper();
 			controler.pen.write(true);
 			controler.ledOn.set(1);
 			controler.passiveWait(0.5);
 			System.out.println("let's start");
+		
 			while (true) {
+		*/	
+			
 				/**
 				 * The position and orientation are expressed relatively to the camera (the relative position is the one of the center of the object which can differ from its origin) and the units are meter and radian.
 				 * https://www.cyberbotics.com/doc/reference/camera?tab-language=python#wb_camera_has_recognition
 				 */
+		/**
 				Node anObj = controler.getFromDef("can"); //should not be there, only to have another orientation for testing...
 				controler.passiveWait(0.1);
-				
+			
 			//	System.out.println("the orientation of the can is " +controler.computeRelativeObjectOrientation(anObj.getPosition(),anObj.getOrientation()));
 				
 				System.out.println("->  the orientation of the robot is " +Math.atan2(controler.getSelf().getOrientation()[0], controler.getSelf().getOrientation()[8]));
@@ -293,9 +354,11 @@ public class PolyCreateControler extends Supervisor {
 					int oid = obj.getId();
 //					Node obj2 = controler.getFromId(oid);
 					double[] backObjPos = obj.getPosition();
+		*/
 					/**
 					 * The position and orientation are expressed relatively to the camera (the relative position is the one of the center of the object which can differ from its origin) and the units are meter and radian.
 					 */
+		/**
 					System.out.println("        I saw an object on back Camera at : "+backObjPos[0]+","+backObjPos[1]);
 				}
 				CameraRecognitionObject[] frontObjs = controler.frontCamera.getRecognitionObjects();
@@ -325,7 +388,7 @@ public class PolyCreateControler extends Supervisor {
 				}
 				controler.flushIRReceiver();
 				
-				
+		
 				
 				
 				
@@ -335,7 +398,7 @@ public class PolyCreateControler extends Supervisor {
 			controler.delete();
 		}
 
-
+		*/
 
 	}
 

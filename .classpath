@@ -10,6 +10,8 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/Users/doudo/Documents/GitHub/polytechWebotsController/fr.univcotedazur.kairos.webots.polycreate.controler/webotsLibs"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="src-gen"/>
 	<classpathentry kind="lib" path="fr.univcotedazur.kairos.webots.polycreate.controler/webotsLibs/Controller.jar"/>
 	<classpathentry kind="lib" path="fr.univcotedazur.kairos.webots.polycreate.controler/webotsLibs/vehicle.jar"/>
 	<classpathentry kind="output" path="fr.univcotedazur.kairos.webots.polycreate.controler/bin"/>
