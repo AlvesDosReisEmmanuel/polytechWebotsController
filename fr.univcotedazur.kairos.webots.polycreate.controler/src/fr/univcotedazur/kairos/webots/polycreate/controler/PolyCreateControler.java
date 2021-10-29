@@ -202,7 +202,6 @@ public class PolyCreateControler extends Supervisor {
 					goBackward();
 					passiveWait(0.5);
 					turn(45*Math.PI/180);
-					passiveWait(0.1);
 				}
 				theFSM.raiseNoObstacle();
 			}
