@@ -195,7 +195,7 @@ public class PolyCreateControler extends Supervisor {
 			}
 		});
 		
-		theFSM.getDodgeObstacle().subscribe(new MyObserver(){
+		theFSM.getDodgeRightObstacle().subscribe(new MyObserver(){
 			@Override 
 			public void next(Void value) {
 				while(isThereObstacle()) {
@@ -206,6 +206,18 @@ public class PolyCreateControler extends Supervisor {
 				theFSM.raiseNoObstacle();
 			}
 			
+		});
+		
+		theFSM.getDodgeLeftObstacle().subscribe(new MyObserver() {
+			@Override 
+			public void next(Void value) {
+				while(isThereObstacle()) {
+					goBackward();
+					passiveWait(0.5);
+					turn(45*Math.PI/180);
+				}
+				theFSM.raiseNoObstacle();
+			}
 		});
 		
 		
