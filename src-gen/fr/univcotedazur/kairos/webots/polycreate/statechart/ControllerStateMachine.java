@@ -16,7 +16,6 @@ public class ControllerStateMachine implements IStatemachine {
 		MAIN_REGION_DODGEOBSTACLE_R1_DODGERIGHTOBSTACLE,
 		MAIN_REGION_DODGEOBSTACLE_R1_DODGELEFTOBSTACLE,
 		_REGION1_CHECKOBSTACLE,
-		_REGION1_STOPCHECKING,
 		$NULLSTATE$
 	};
 	
@@ -149,9 +148,6 @@ public class ControllerStateMachine implements IStatemachine {
 			case _REGION1_CHECKOBSTACLE:
 				transitioned = _region1_checkObstacle_react(transitioned);
 				break;
-			case _REGION1_STOPCHECKING:
-				transitioned = _region1_stopChecking_react(transitioned);
-				break;
 			default:
 				break;
 			}
@@ -207,8 +203,6 @@ public class ControllerStateMachine implements IStatemachine {
 			return stateVector[0] == State.MAIN_REGION_DODGEOBSTACLE_R1_DODGELEFTOBSTACLE;
 		case _REGION1_CHECKOBSTACLE:
 			return stateVector[1] == State._REGION1_CHECKOBSTACLE;
-		case _REGION1_STOPCHECKING:
-			return stateVector[1] == State._REGION1_STOPCHECKING;
 		default:
 			return false;
 		}
@@ -623,12 +617,6 @@ public class ControllerStateMachine implements IStatemachine {
 		stateConfVectorPosition = 1;
 	}
 	
-	/* 'default' enter sequence for state stopChecking */
-	private void enterSequence__region1_stopChecking_default() {
-		stateVector[1] = State._REGION1_STOPCHECKING;
-		stateConfVectorPosition = 1;
-	}
-	
 	/* 'default' enter sequence for region main region */
 	private void enterSequence_main_region_default() {
 		react_main_region__entry_Default();
@@ -686,12 +674,6 @@ public class ControllerStateMachine implements IStatemachine {
 		stateConfVectorPosition = 1;
 	}
 	
-	/* Default exit sequence for state stopChecking */
-	private void exitSequence__region1_stopChecking() {
-		stateVector[1] = State.$NULLSTATE$;
-		stateConfVectorPosition = 1;
-	}
-	
 	/* Default exit sequence for region main region */
 	private void exitSequence_main_region() {
 		switch (stateVector[0]) {
@@ -737,9 +719,6 @@ public class ControllerStateMachine implements IStatemachine {
 		switch (stateVector[1]) {
 		case _REGION1_CHECKOBSTACLE:
 			exitSequence__region1_checkObstacle();
-			break;
-		case _REGION1_STOPCHECKING:
-			exitSequence__region1_stopChecking();
 			break;
 		default:
 			break;
@@ -865,32 +844,6 @@ public class ControllerStateMachine implements IStatemachine {
 		long transitioned_after = transitioned_before;
 		
 		if (transitioned_after<1) {
-			if (stop) {
-				exitSequence__region1_checkObstacle();
-				enterSequence__region1_stopChecking_default();
-				react(0);
-				
-				transitioned_after = 1;
-			}
-		}
-		/* If no transition was taken then execute local reactions */
-		if (transitioned_after==transitioned_before) {
-			transitioned_after = react(transitioned_before);
-		}
-		return transitioned_after;
-	}
-	
-	private long _region1_stopChecking_react(long transitioned_before) {
-		long transitioned_after = transitioned_before;
-		
-		if (transitioned_after<1) {
-			if (noObstacle) {
-				exitSequence__region1_stopChecking();
-				enterSequence__region1_checkObstacle_default();
-				react(0);
-				
-				transitioned_after = 1;
-			}
 		}
 		/* If no transition was taken then execute local reactions */
 		if (transitioned_after==transitioned_before) {
