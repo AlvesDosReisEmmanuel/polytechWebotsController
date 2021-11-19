@@ -18,6 +18,7 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 		MAIN_REGION_DODGEOBSTACLE_R1_DODGERIGHTOBSTACLE,
 		MAIN_REGION_DODGEOBSTACLE_R1_DODGELEFTOBSTACLE,
 		_REGION1_CHECKOBSTACLE,
+		_REGION1_STOPCHECKING,
 		$NULLSTATE$
 	};
 	
@@ -158,6 +159,9 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 			case _REGION1_CHECKOBSTACLE:
 				transitioned = _region1_checkObstacle_react(transitioned);
 				break;
+			case _REGION1_STOPCHECKING:
+				transitioned = _region1_StopChecking_react(transitioned);
+				break;
 			default:
 				break;
 			}
@@ -216,6 +220,8 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 			return stateVector[0] == State.MAIN_REGION_DODGEOBSTACLE_R1_DODGELEFTOBSTACLE;
 		case _REGION1_CHECKOBSTACLE:
 			return stateVector[1] == State._REGION1_CHECKOBSTACLE;
+		case _REGION1_STOPCHECKING:
+			return stateVector[1] == State._REGION1_STOPCHECKING;
 		default:
 			return false;
 		}
@@ -594,7 +600,7 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 	
 	/* Entry action for state 'checkObstacle'. */
 	private void entryAction__region1_checkObstacle() {
-		timerService.setTimer(this, 0, 7, false);
+		timerService.setTimer(this, 0, 21, false);
 		
 		raiseCheckObstacle();
 	}
@@ -649,6 +655,12 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 	private void enterSequence__region1_checkObstacle_default() {
 		entryAction__region1_checkObstacle();
 		stateVector[1] = State._REGION1_CHECKOBSTACLE;
+		stateConfVectorPosition = 1;
+	}
+	
+	/* 'default' enter sequence for state StopChecking */
+	private void enterSequence__region1_StopChecking_default() {
+		stateVector[1] = State._REGION1_STOPCHECKING;
 		stateConfVectorPosition = 1;
 	}
 	
@@ -711,6 +723,12 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 		exitAction__region1_checkObstacle();
 	}
 	
+	/* Default exit sequence for state StopChecking */
+	private void exitSequence__region1_StopChecking() {
+		stateVector[1] = State.$NULLSTATE$;
+		stateConfVectorPosition = 1;
+	}
+	
 	/* Default exit sequence for region main region */
 	private void exitSequence_main_region() {
 		switch (stateVector[0]) {
@@ -756,6 +774,9 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 		switch (stateVector[1]) {
 		case _REGION1_CHECKOBSTACLE:
 			exitSequence__region1_checkObstacle();
+			break;
+		case _REGION1_STOPCHECKING:
+			exitSequence__region1_StopChecking();
 			break;
 		default:
 			break;
@@ -883,6 +904,41 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 		if (transitioned_after<1) {
 			if (timeEvents[0]) {
 				exitSequence__region1_checkObstacle();
+				enterSequence__region1_checkObstacle_default();
+				react(0);
+				
+				transitioned_after = 1;
+			} else {
+				if (leftObstacleDetected) {
+					exitSequence__region1_checkObstacle();
+					enterSequence__region1_StopChecking_default();
+					react(0);
+					
+					transitioned_after = 1;
+				} else {
+					if (rightObstacleDetected) {
+						exitSequence__region1_checkObstacle();
+						enterSequence__region1_StopChecking_default();
+						react(0);
+						
+						transitioned_after = 1;
+					}
+				}
+			}
+		}
+		/* If no transition was taken then execute local reactions */
+		if (transitioned_after==transitioned_before) {
+			transitioned_after = react(transitioned_before);
+		}
+		return transitioned_after;
+	}
+	
+	private long _region1_StopChecking_react(long transitioned_before) {
+		long transitioned_after = transitioned_before;
+		
+		if (transitioned_after<1) {
+			if (noObstacle) {
+				exitSequence__region1_StopChecking();
 				enterSequence__region1_checkObstacle_default();
 				react(0);
 				

@@ -42,8 +42,11 @@ class MyObserver implements Observer<Void>{
 	}
 }
 
-public class PolyCreateControler extends Supervisor {
 
+public class PolyCreateControler extends Supervisor {
+	
+	private static boolean isTurning=false;
+	
 	static int MAX_SPEED = 16;
 	static int NULL_SPEED = 0;
 	static int HALF_SPEED = 8;
@@ -99,9 +102,15 @@ public class PolyCreateControler extends Supervisor {
 	public 	int timestep = Integer.MAX_VALUE;
 	public 	Random random = new Random();
 	
-	boolean isThereObstacle() {
-		if (isThereCollisionAtLeft() ||frontLeftDistanceSensor.getValue() < 250
-				||isThereCollisionAtRight()||frontRightDistanceSensor.getValue() < 250 || 
+	boolean isThereObstacleRight() {
+		if (isThereCollisionAtRight()||frontRightDistanceSensor.getValue() < 250 ) {
+			return true;
+		}
+		else return false;
+	}
+	
+	boolean isThereObstacleLeft() {
+		if (isThereCollisionAtLeft() ||frontLeftDistanceSensor.getValue() < 250 || 
 				frontDistanceSensor.getValue() < 250) {
 			return true;
 		}
@@ -188,23 +197,18 @@ public class PolyCreateControler extends Supervisor {
 			@Override
 			public void next(Void value) {
 				//System.out.println("BIP");
-				goForward();
-				while(!isThereObstacle()) {
-					passiveWait(0.1);
-				}
-				theFSM.raiseObstacleDetected();
-				
+				goForward();				
 			}
 		});
 		
 		theFSM.getDodgeRightObstacle().subscribe(new MyObserver(){
 			@Override 
 			public void next(Void value) {
-				while(isThereObstacle()) {
-					goBackward();
-					passiveWait(0.5);
-					turn(45*Math.PI/180);
-				}
+				isTurning=true;
+				goBackward();
+				passiveWait(0.5);
+				turn(45*Math.PI/180);
+				isTurning=false;
 				theFSM.raiseNoObstacle();
 			}
 			
@@ -213,11 +217,12 @@ public class PolyCreateControler extends Supervisor {
 		theFSM.getDodgeLeftObstacle().subscribe(new MyObserver() {
 			@Override 
 			public void next(Void value) {
-				while(isThereObstacle()) {
-					goBackward();
-					passiveWait(0.5);
-					turn(-45*Math.PI/180);
-				}
+				isTurning=true;
+
+				goBackward();
+				passiveWait(0.5);
+				turn(-45*Math.PI/180);
+				isTurning=false;
 				theFSM.raiseNoObstacle();
 			}
 		});
@@ -226,10 +231,17 @@ public class PolyCreateControler extends Supervisor {
 		theFSM.getCheckObstacle().subscribe(new MyObserver() {
 			@Override
 			public void next(Void value) {
-				//isThereObstacle();
+				//System.out.print("Wow");
+				if(isThereObstacleLeft()) {
+					theFSM.raiseLeftObstacleDetected();
+				}
+				else if(isThereObstacleRight()) {
+					theFSM.raiseRightObstacleDetected();
+				}
 				//passiveWait(1);
 			}
 		});
+		//theFSM.raiseStart();
 		
 		Runtime.getRuntime().addShutdownHook(new Thread()
 		{
@@ -342,7 +354,16 @@ public class PolyCreateControler extends Supervisor {
 
 	public static void main(String[] args) {
 		PolyCreateControler controler = new PolyCreateControler();
-		
+		theFSM.raiseStart();
+		while(true) {
+			if(!isTurning) {
+				//System.out.println("a");
+				controler.passiveWait(0.1);
+
+			}
+			else {
+			}
+		}
 
 		/**
 		try {
