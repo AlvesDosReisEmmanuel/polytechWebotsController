@@ -28,7 +28,9 @@
       </vertices>
     </regions>
     <regions xmi:id="_o4UrcDicEeykyuVuNDeA7g">
-      <vertices xsi:type="sgraph:State" xmi:id="_vkzKgDicEeykyuVuNDeA7g" specification="entry/&#xD;&#xA;raise checkObstacle" name="checkObstacle" incomingTransitions="__ODXUDicEeykyuVuNDeA7g"/>
+      <vertices xsi:type="sgraph:State" xmi:id="_vkzKgDicEeykyuVuNDeA7g" specification="entry/&#xD;&#xA;raise checkObstacle" name="checkObstacle" incomingTransitions="__ODXUDicEeykyuVuNDeA7g _3bq10EkTEey537aOSCDJ5Q">
+        <outgoingTransitions xmi:id="_3bq10EkTEey537aOSCDJ5Q" specification="after 7ms" target="_vkzKgDicEeykyuVuNDeA7g"/>
+      </vertices>
       <vertices xsi:type="sgraph:Entry" xmi:id="_-xTJ4DicEeykyuVuNDeA7g">
         <outgoingTransitions xmi:id="__ODXUDicEeykyuVuNDeA7g" specification="" target="_vkzKgDicEeykyuVuNDeA7g"/>
       </vertices>
@@ -342,6 +344,17 @@
       <styles xsi:type="notation:FontStyle" xmi:id="_BojBUEiXEeyjSftSppM8Hw" fontName="Verdana"/>
       <bendpoints xsi:type="notation:RelativeBendpoints" xmi:id="_BohzMkiXEeyjSftSppM8Hw" points="[0, 0, -179, -279]$[154, 248, -25, -31]"/>
       <sourceAnchor xsi:type="notation:IdentityAnchor" xmi:id="_BotZYEiXEeyjSftSppM8Hw" id="(0.7682926829268293,1.0)"/>
+    </edges>
+    <edges xmi:id="_3b3DEEkTEey537aOSCDJ5Q" type="Transition" element="_3bq10EkTEey537aOSCDJ5Q" source="_vk0_sDicEeykyuVuNDeA7g" target="_vk0_sDicEeykyuVuNDeA7g">
+      <children xsi:type="notation:DecorationNode" xmi:id="_3b3DFEkTEey537aOSCDJ5Q" type="TransitionExpression">
+        <styles xsi:type="notation:ShapeStyle" xmi:id="_3b3DFUkTEey537aOSCDJ5Q"/>
+        <layoutConstraint xsi:type="notation:Location" xmi:id="_3b3DFkkTEey537aOSCDJ5Q" x="41" y="19"/>
+      </children>
+      <styles xsi:type="notation:ConnectorStyle" xmi:id="_3b3DEUkTEey537aOSCDJ5Q" routing="Rectilinear" lineColor="4210752"/>
+      <styles xsi:type="notation:FontStyle" xmi:id="_3b3DE0kTEey537aOSCDJ5Q" fontName="Verdana"/>
+      <bendpoints xsi:type="notation:RelativeBendpoints" xmi:id="_3b3DEkkTEey537aOSCDJ5Q" points="[-62, 79, -7, 11]$[-54, 79, 1, 11]"/>
+      <sourceAnchor xsi:type="notation:IdentityAnchor" xmi:id="_3b9JsEkTEey537aOSCDJ5Q" id="(0.9512195121951219,0.44036697247706424)"/>
+      <targetAnchor xsi:type="notation:IdentityAnchor" xmi:id="_3b9JsUkTEey537aOSCDJ5Q" id="(0.6097560975609756,0.926605504587156)"/>
     </edges>
   </notation:Diagram>
 </xmi:XMI>

@@ -2,11 +2,13 @@
 package fr.univcotedazur.kairos.webots.polycreate.statechart;
 
 import com.yakindu.core.IStatemachine;
+import com.yakindu.core.ITimed;
+import com.yakindu.core.ITimerService;
 import com.yakindu.core.rx.Observable;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class ControllerStateMachine implements IStatemachine {
+public class ControllerStateMachine implements IStatemachine, ITimed {
 	public enum State {
 		MAIN_REGION_CLEANING,
 		MAIN_REGION_WASTEDETECTED,
@@ -20,6 +22,10 @@ public class ControllerStateMachine implements IStatemachine {
 	};
 	
 	private final State[] stateVector = new State[2];
+	
+	private ITimerService timerService;
+	
+	private final boolean[] timeEvents = new boolean[1];
 	
 	private BlockingQueue<Runnable> inEventQueue = new LinkedBlockingQueue<Runnable>();
 	private boolean isExecuting;
@@ -61,6 +67,9 @@ public class ControllerStateMachine implements IStatemachine {
 	}
 	
 	public synchronized void enter() {
+		if (timerService == null) {
+			throw new IllegalStateException("Timer service must be set.");
+		}
 		
 		
 		if (getIsExecuting()) {
@@ -113,6 +122,7 @@ public class ControllerStateMachine implements IStatemachine {
 		rightObstacleDetected = false;
 		leftObstacleDetected = false;
 		stop = false;
+		timeEvents[0] = false;
 	}
 	
 	private void microStep() {
@@ -155,6 +165,9 @@ public class ControllerStateMachine implements IStatemachine {
 	}
 	
 	private void runCycle() {
+		if (timerService == null) {
+			throw new IllegalStateException("Timer service must be set.");
+		}
 		
 		
 		if (getIsExecuting()) {
@@ -169,7 +182,7 @@ public class ControllerStateMachine implements IStatemachine {
 			clearInEvents();
 			
 			nextEvent();
-		} while (((((((((((((myEvent || obstacleNear) || objectNear) || nothingInFront) || wasteDetected) || wasteGripped) || wasteSorted) || obstacleDetected) || noObstacle) || start) || rightObstacleDetected) || leftObstacleDetected) || stop));
+		} while ((((((((((((((myEvent || obstacleNear) || objectNear) || nothingInFront) || wasteDetected) || wasteGripped) || wasteSorted) || obstacleDetected) || noObstacle) || start) || rightObstacleDetected) || leftObstacleDetected) || stop) || timeEvents[0]));
 		
 		isExecuting = false;
 	}
@@ -206,6 +219,21 @@ public class ControllerStateMachine implements IStatemachine {
 		default:
 			return false;
 		}
+	}
+	
+	public synchronized void setTimerService(ITimerService timerService) {
+		this.timerService = timerService;
+	}
+	
+	public ITimerService getTimerService() {
+		return timerService;
+	}
+	
+	public synchronized void raiseTimeEvent(int eventID) {
+		inEventQueue.add(() -> {
+			timeEvents[eventID] = true;
+		});
+		runCycle();
 	}
 	
 	
@@ -566,7 +594,14 @@ public class ControllerStateMachine implements IStatemachine {
 	
 	/* Entry action for state 'checkObstacle'. */
 	private void entryAction__region1_checkObstacle() {
+		timerService.setTimer(this, 0, 7, false);
+		
 		raiseCheckObstacle();
+	}
+	
+	/* Exit action for state 'checkObstacle'. */
+	private void exitAction__region1_checkObstacle() {
+		timerService.unsetTimer(this, 0);
 	}
 	
 	/* 'default' enter sequence for state Cleaning */
@@ -672,6 +707,8 @@ public class ControllerStateMachine implements IStatemachine {
 	private void exitSequence__region1_checkObstacle() {
 		stateVector[1] = State.$NULLSTATE$;
 		stateConfVectorPosition = 1;
+		
+		exitAction__region1_checkObstacle();
 	}
 	
 	/* Default exit sequence for region main region */
@@ -844,6 +881,13 @@ public class ControllerStateMachine implements IStatemachine {
 		long transitioned_after = transitioned_before;
 		
 		if (transitioned_after<1) {
+			if (timeEvents[0]) {
+				exitSequence__region1_checkObstacle();
+				enterSequence__region1_checkObstacle_default();
+				react(0);
+				
+				transitioned_after = 1;
+			}
 		}
 		/* If no transition was taken then execute local reactions */
 		if (transitioned_after==transitioned_before) {

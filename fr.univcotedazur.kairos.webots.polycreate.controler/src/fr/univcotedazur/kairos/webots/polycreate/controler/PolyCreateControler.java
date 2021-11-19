@@ -30,6 +30,7 @@ import com.cyberbotics.webots.controller.Receiver;
 import com.cyberbotics.webots.controller.Robot;
 import com.cyberbotics.webots.controller.Supervisor;
 import com.cyberbotics.webots.controller.TouchSensor;
+import com.yakindu.core.TimerService;
 import com.yakindu.core.rx.Observer;
 
 import fr.univcotedazur.kairos.webots.polycreate.statechart.ControllerStateMachine;
@@ -179,8 +180,9 @@ public class PolyCreateControler extends Supervisor {
 		PolyCreateControler ctrl = this;
 		
 		theFSM=new ControllerStateMachine();
+		TimerService timer = new TimerService();
+		theFSM.setTimerService(timer);
 		theFSM.enter();
-		
 		
 		theFSM.getCleaning().subscribe(new MyObserver() {
 			@Override
@@ -220,6 +222,14 @@ public class PolyCreateControler extends Supervisor {
 			}
 		});
 		
+		
+		theFSM.getCheckObstacle().subscribe(new MyObserver() {
+			@Override
+			public void next(Void value) {
+				//isThereObstacle();
+				//passiveWait(1);
+			}
+		});
 		
 		Runtime.getRuntime().addShutdownHook(new Thread()
 		{
@@ -332,7 +342,8 @@ public class PolyCreateControler extends Supervisor {
 
 	public static void main(String[] args) {
 		PolyCreateControler controler = new PolyCreateControler();
-		theFSM.raiseStart();
+		
+
 		/**
 		try {
 			controler.openGripper();
