@@ -212,6 +212,8 @@ public class PolyCreateControler extends Supervisor {
 		theFSM.getGoForward().subscribe(new MyObserver() {
 			@Override
 			public void next(Void value) {
+				theFSM.setObstacleDetectedBool(false);
+
 				System.out.println("Raise goForward");
 				//System.out.println(isTurning);
 				goForward();
@@ -224,6 +226,9 @@ public class PolyCreateControler extends Supervisor {
 			public void next(Void value) {
 				isTurning=true;
 				System.out.println("DodgingObstacle");
+				
+				System.out.print("ObstacleDetectedBool : ");
+				System.out.println(theFSM.getObstacleDetectedBool());
 				
 				System.out.print("Null State ? ");
 				System.out.println(theFSM.isStateActive(State.$NULLSTATE$));
@@ -311,6 +316,7 @@ public class PolyCreateControler extends Supervisor {
 				//passiveWait(1);
 				if(isThereObstacleRight()||isThereObstacleLeft()) {
 					System.out.println("raise ObstacleDetected");
+					theFSM.setObstacleDetectedBool(true);
 					theFSM.raiseObstacleDetected();
 				}
 			}
