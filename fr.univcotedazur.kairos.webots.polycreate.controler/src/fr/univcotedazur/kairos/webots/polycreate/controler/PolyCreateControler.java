@@ -34,6 +34,7 @@ import com.yakindu.core.TimerService;
 import com.yakindu.core.rx.Observer;
 
 import fr.univcotedazur.kairos.webots.polycreate.statechart.ControllerStateMachine;
+import fr.univcotedazur.kairos.webots.polycreate.statechart.ControllerStateMachine.State;
 
 class MyObserver implements Observer<Void>{
 @Override
@@ -103,15 +104,30 @@ public class PolyCreateControler extends Supervisor {
 	public 	Random random = new Random();
 	
 	boolean isThereObstacleRight() {
-		if (isThereCollisionAtRight()||frontRightDistanceSensor.getValue() < 250 ) {
+		if (isThereCollisionAtRight()||frontRightDistanceSensor.getValue() < 250  || 
+				frontDistanceSensor.getValue() < 250 ) {
+			return true;
+		}
+		else return false;
+	}
+	
+	boolean isThereObstacleRightForTurning() {
+		if (isThereCollisionAtRight()||frontRightDistanceSensor.getValue() < 1000 ) {
+			return true;
+		}
+		else return false;
+	}
+	
+	boolean isThereObstacleLeftForTurning() {
+		if (isThereCollisionAtLeft() ||frontLeftDistanceSensor.getValue() < 1000 || 
+				frontDistanceSensor.getValue() < 250) {
 			return true;
 		}
 		else return false;
 	}
 	
 	boolean isThereObstacleLeft() {
-		if (isThereCollisionAtLeft() ||frontLeftDistanceSensor.getValue() < 250 || 
-				frontDistanceSensor.getValue() < 250) {
+		if (isThereCollisionAtLeft() ||frontLeftDistanceSensor.getValue() < 250) {
 			return true;
 		}
 		else return false;
@@ -196,22 +212,54 @@ public class PolyCreateControler extends Supervisor {
 		theFSM.getGoForward().subscribe(new MyObserver() {
 			@Override
 			public void next(Void value) {
-				System.out.println("goForward");
+				System.out.println("Raise goForward");
 				//System.out.println(isTurning);
 				goForward();
 				//theFSM.setTurnFinished(false);
 			}
 		});
 		
-		theFSM.getDodgeRightObstacle().subscribe(new MyObserver(){
+		theFSM.getDodgeObstacle().subscribe(new MyObserver(){
 			@Override 
 			public void next(Void value) {
 				isTurning=true;
+				System.out.println("DodgingObstacle");
+				
+				System.out.print("Null State ? ");
+				System.out.println(theFSM.isStateActive(State.$NULLSTATE$));
+				
+				System.out.print("DodgeObstacle State ? ");
+				System.out.println(theFSM.isStateActive(State.MAIN_REGION_DODGEOBSTACLE));
+				
+				System.out.print("Moving Forward State ? ");
+				System.out.println(theFSM.isStateActive(State.MAIN_REGION_MOVING_INNER_REGION_FORWARD));
+				
+				System.out.print("Stopped State ? ");
+				System.out.println(theFSM.isStateActive(State.MAIN_REGION_STOPPED));
+				
+				
+				System.out.print("CheckObstacle State ? ");
+				System.out.println(theFSM.isStateActive(State._REGION1_CHECKOBSTACLE));
+			
+				System.out.print("StopChecking State ? ");
+				System.out.println(theFSM.isStateActive(State._REGION1_STOPCHECKING));
+				
+				System.out.print("Fake State ? ");
+				System.out.println(theFSM.isStateActive(State.FAKE_F));
+
+
+
+
+				System.out.print("Turning value: ");
+				System.out.println(isTurning);
 				goBackward();
-				passiveWait(0.5);
-				turn(45*Math.PI/180);
-				flushIRReceiver();
+				passiveWait(0.5);				
+				System.out.println("goBackward");
+				while(isThereObstacleLeftForTurning()) {
+					turn(45*Math.PI/180);
+				}
 				isTurning=false;
+				System.out.println("Raise NoObstacle");
 				theFSM.raiseNoObstacle();
 				//theFSM.setTurnFinished(true);
 				
@@ -219,40 +267,52 @@ public class PolyCreateControler extends Supervisor {
 			}
 			
 		});
-		
+		/**
 		theFSM.getDodgeLeftObstacle().subscribe(new MyObserver() {
 			@Override 
 			public void next(Void value) {
 				isTurning=true;
-
+				System.out.println("DodgingLeftObstacle");
+				System.out.println(isTurning);
 				goBackward();
 				passiveWait(0.5);
-				turn(-45*Math.PI/180);
-				flushIRReceiver();				
+				while(isThereObstacleRightForTurning()) {
+					turn(-45*Math.PI/180);
+				}
 				isTurning=false;
+				System.out.println("RaisingNoObstacle");
 				theFSM.raiseNoObstacle();
 				//theFSM.setTurnFinished(true);
 
 			}
 		});
-		
+		*/
 		
 		theFSM.getCheckObstacle().subscribe(new MyObserver() {
 			@Override
 			public void next(Void value) {
 				//System.out.print("Wow");
-				
-				if(isThereCollisionAtLeft() || frontLeftDistanceSensor.getValue() < 250) {
+				/*
+				if(isThereObstacleRight()&&isThereObstacleLeft()) {
+					System.out.println("Left && Right Detected");
+					theFSM.raiseRightObstacleDetected();
+				}
+				else if(isThereCollisionAtLeft() || frontLeftDistanceSensor.getValue() < 250) {
 					theFSM.raiseLeftObstacleDetected();
-					//System.out.print("WowL");
+					System.out.println("LeftObstacleDetected");
 
 				}
 				else if(isThereCollisionAtRight()|| frontRightDistanceSensor.getValue() < 250 ||frontDistanceSensor.getValue() < 250) {
 					theFSM.raiseRightObstacleDetected();
-					//System.out.print("WowR");
+					System.out.println("RightObstacleDetected");
 
-				}
+				}*/
+				
 				//passiveWait(1);
+				if(isThereObstacleRight()||isThereObstacleLeft()) {
+					System.out.println("raise ObstacleDetected");
+					theFSM.raiseObstacleDetected();
+				}
 			}
 		});
 		//theFSM.raiseStart();
@@ -371,12 +431,19 @@ public class PolyCreateControler extends Supervisor {
 		theFSM.raiseStart();
 		while(true) {
 			if(!isTurning) {
+
 			controler.passiveWait(0.1);
-			System.out.println("Advancing");
+			//System.out.println("Advancing");
 			}
 			else  {
-				System.out.println("Turning in progress");
-				
+				//System.out.println("Turning in progress");
+				try {
+					//System.out.println("Turning in progress");
+					Thread.sleep(10);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			
 		}

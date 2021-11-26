@@ -9,6 +9,6 @@ renderingMode: PLAIN
 orthographicViewHeight: 5.87492
 textFiles: -1
 globalOptionalRendering: DistanceSensorRays
-renderingDevicePerspectives: Create:backCamera;1;0.441406;0;0.804798
-renderingDevicePerspectives: Create:frontCamera;1;0.125;0;0.722063
+renderingDevicePerspectives: Create:backCamera;1;0.644531;0;0.804798
+renderingDevicePerspectives: Create:frontCamera;1;0.259766;0;0.722063
 renderingDevicePerspectives: robot:ground_display;0;0.554688;0;0
