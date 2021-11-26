@@ -193,11 +193,11 @@ public class PolyCreateControler extends Supervisor {
 		theFSM.setTimerService(timer);
 		theFSM.enter();
 		
-		theFSM.getCleaning().subscribe(new MyObserver() {
+		theFSM.getGoForward().subscribe(new MyObserver() {
 			@Override
 			public void next(Void value) {
 				//System.out.println("BIP");
-				goForward();				
+				goForward();
 			}
 		});
 		
@@ -208,8 +208,10 @@ public class PolyCreateControler extends Supervisor {
 				goBackward();
 				passiveWait(0.5);
 				turn(45*Math.PI/180);
-				isTurning=false;
+				flushIRReceiver();
 				theFSM.raiseNoObstacle();
+				isTurning=false;
+
 			}
 			
 		});
@@ -222,8 +224,10 @@ public class PolyCreateControler extends Supervisor {
 				goBackward();
 				passiveWait(0.5);
 				turn(-45*Math.PI/180);
-				isTurning=false;
+				flushIRReceiver();
 				theFSM.raiseNoObstacle();
+				isTurning=false;
+
 			}
 		});
 		
@@ -232,11 +236,16 @@ public class PolyCreateControler extends Supervisor {
 			@Override
 			public void next(Void value) {
 				//System.out.print("Wow");
-				if(isThereObstacleLeft()) {
+				
+				if(isThereCollisionAtLeft() || frontLeftDistanceSensor.getValue() < 250) {
 					theFSM.raiseLeftObstacleDetected();
+					//System.out.print("WowL");
+
 				}
-				else if(isThereObstacleRight()) {
+				else if(isThereCollisionAtRight()|| frontRightDistanceSensor.getValue() < 250 ||frontDistanceSensor.getValue() < 250) {
 					theFSM.raiseRightObstacleDetected();
+					//System.out.print("WowR");
+
 				}
 				//passiveWait(1);
 			}
@@ -319,6 +328,7 @@ public class PolyCreateControler extends Supervisor {
 	}
 
 	public void turn(double angle) {
+		
 		stop();
 		double l_offset = leftSensor.getValue();
 		double r_offset = rightSensor.getValue();
@@ -337,6 +347,7 @@ public class PolyCreateControler extends Supervisor {
 		} while (orientation < neg * angle);
 		stop();
 		step(timestep);
+		
 	}
 
 	/**
@@ -356,13 +367,12 @@ public class PolyCreateControler extends Supervisor {
 		PolyCreateControler controler = new PolyCreateControler();
 		theFSM.raiseStart();
 		while(true) {
-			if(!isTurning) {
-				//System.out.println("a");
-				controler.passiveWait(0.1);
-
+			if(isTurning==false)	
+			controler.passiveWait(0.1);
+			else if(isTurning) {
+				
 			}
-			else {
-			}
+			
 		}
 
 		/**
