@@ -9,7 +9,7 @@
         <outgoingTransitions xmi:id="_agz0UDiREeySH4wOcWBQjw" specification="start" target="_9TgP0E6NEey2QqYViV3i4g"/>
       </vertices>
       <vertices xsi:type="sgraph:State" xmi:id="_K91KcDiYEeykyuVuNDeA7g" name="DodgeObstacle">
-        <outgoingTransitions xmi:id="_Km_s4DiaEeykyuVuNDeA7g" specification="[turnFinished]" target="_lSD-YDMVEeywwpvQICH6fg"/>
+        <outgoingTransitions xmi:id="_Km_s4DiaEeykyuVuNDeA7g" specification="noObstacle" target="_lSD-YDMVEeywwpvQICH6fg"/>
         <regions xmi:id="_K95b4DiYEeykyuVuNDeA7g" name="r1">
           <vertices xsi:type="sgraph:State" xmi:id="_p371sDiZEeykyuVuNDeA7g" specification="entry/&#xD;&#xA;raise&#xD;&#xA;dodgeRightObstacle" name="DodgeRightObstacle" incomingTransitions="_h5T80DiaEeykyuVuNDeA7g"/>
           <vertices xsi:type="sgraph:State" xmi:id="_qjGSkDiZEeykyuVuNDeA7g" specification="entry/&#xD;&#xA;raise&#xD;&#xA;dodgeLeftObstacle" name="DodgeLeftObstacle" incomingTransitions="_BobskEiXEeyjSftSppM8Hw"/>
@@ -51,7 +51,7 @@
         <outgoingTransitions xmi:id="__ODXUDicEeykyuVuNDeA7g" specification="" target="_vkzKgDicEeykyuVuNDeA7g"/>
       </vertices>
       <vertices xsi:type="sgraph:State" xmi:id="_PXx6kEkdEeymKKeazF8XFQ" name="StopChecking" incomingTransitions="_RLkzcEkdEeymKKeazF8XFQ _UMoJoEkdEeymKKeazF8XFQ">
-        <outgoingTransitions xmi:id="_WbaVYEkdEeymKKeazF8XFQ" specification="[turnFinished]" target="_vkzKgDicEeykyuVuNDeA7g"/>
+        <outgoingTransitions xmi:id="_WbaVYEkdEeymKKeazF8XFQ" specification="noObstacle" target="_vkzKgDicEeykyuVuNDeA7g"/>
       </vertices>
     </regions>
     <regions xmi:id="_N_wjAE6UEey2QqYViV3i4g" name="fake">
@@ -537,7 +537,7 @@
     <edges xmi:id="_WbbjgEkdEeymKKeazF8XFQ" type="Transition" element="_WbaVYEkdEeymKKeazF8XFQ" source="_PX52YEkdEeymKKeazF8XFQ" target="_vk0_sDicEeykyuVuNDeA7g">
       <children xsi:type="notation:DecorationNode" xmi:id="_WbbjhEkdEeymKKeazF8XFQ" type="TransitionExpression">
         <styles xsi:type="notation:ShapeStyle" xmi:id="_WbbjhUkdEeymKKeazF8XFQ"/>
-        <layoutConstraint xsi:type="notation:Location" xmi:id="_WbbjhkkdEeymKKeazF8XFQ" x="11" y="-12"/>
+        <layoutConstraint xsi:type="notation:Location" xmi:id="_WbbjhkkdEeymKKeazF8XFQ" x="-21" y="-13"/>
       </children>
       <styles xsi:type="notation:ConnectorStyle" xmi:id="_WbbjgUkdEeymKKeazF8XFQ" routing="Rectilinear" lineColor="4210752"/>
       <styles xsi:type="notation:FontStyle" xmi:id="_Wbbjg0kdEeymKKeazF8XFQ" fontName="Verdana"/>

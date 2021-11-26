@@ -197,10 +197,9 @@ public class PolyCreateControler extends Supervisor {
 			@Override
 			public void next(Void value) {
 				System.out.println("goForward");
-				System.out.println(isTurning);
-
-				//theFSM.setTurnFinished(false);
+				//System.out.println(isTurning);
 				goForward();
+				//theFSM.setTurnFinished(false);
 			}
 		});
 		
@@ -212,8 +211,10 @@ public class PolyCreateControler extends Supervisor {
 				passiveWait(0.5);
 				turn(45*Math.PI/180);
 				flushIRReceiver();
-				theFSM.setTurnFinished(true);
 				isTurning=false;
+				theFSM.raiseNoObstacle();
+				//theFSM.setTurnFinished(true);
+				
 
 			}
 			
@@ -227,9 +228,10 @@ public class PolyCreateControler extends Supervisor {
 				goBackward();
 				passiveWait(0.5);
 				turn(-45*Math.PI/180);
-				flushIRReceiver();
-				theFSM.setTurnFinished(true);
+				flushIRReceiver();				
 				isTurning=false;
+				theFSM.raiseNoObstacle();
+				//theFSM.setTurnFinished(true);
 
 			}
 		});

@@ -1041,7 +1041,7 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 		long transitioned_after = transitioned_before;
 		
 		if (transitioned_after<0) {
-			if (getTurnFinished()) {
+			if (noObstacle) {
 				exitSequence_main_region_DodgeObstacle();
 				enterSequence_main_region_Moving_inner_region_Forward_default();
 				transitioned_after = 0;
@@ -1201,7 +1201,7 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 		long transitioned_after = transitioned_before;
 		
 		if (transitioned_after<1) {
-			if (getTurnFinished()) {
+			if (noObstacle) {
 				exitSequence__region1_StopChecking();
 				enterSequence__region1_checkObstacle_default();
 				transitioned_after = 1;
