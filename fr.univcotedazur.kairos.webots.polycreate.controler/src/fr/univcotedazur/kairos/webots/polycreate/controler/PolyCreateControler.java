@@ -196,7 +196,10 @@ public class PolyCreateControler extends Supervisor {
 		theFSM.getGoForward().subscribe(new MyObserver() {
 			@Override
 			public void next(Void value) {
-				//System.out.println("BIP");
+				System.out.println("goForward");
+				System.out.println(isTurning);
+
+				//theFSM.setTurnFinished(false);
 				goForward();
 			}
 		});
@@ -209,7 +212,7 @@ public class PolyCreateControler extends Supervisor {
 				passiveWait(0.5);
 				turn(45*Math.PI/180);
 				flushIRReceiver();
-				theFSM.raiseNoObstacle();
+				theFSM.setTurnFinished(true);
 				isTurning=false;
 
 			}
@@ -225,7 +228,7 @@ public class PolyCreateControler extends Supervisor {
 				passiveWait(0.5);
 				turn(-45*Math.PI/180);
 				flushIRReceiver();
-				theFSM.raiseNoObstacle();
+				theFSM.setTurnFinished(true);
 				isTurning=false;
 
 			}
@@ -328,7 +331,6 @@ public class PolyCreateControler extends Supervisor {
 	}
 
 	public void turn(double angle) {
-		
 		stop();
 		double l_offset = leftSensor.getValue();
 		double r_offset = rightSensor.getValue();
@@ -347,7 +349,6 @@ public class PolyCreateControler extends Supervisor {
 		} while (orientation < neg * angle);
 		stop();
 		step(timestep);
-		
 	}
 
 	/**
@@ -367,9 +368,12 @@ public class PolyCreateControler extends Supervisor {
 		PolyCreateControler controler = new PolyCreateControler();
 		theFSM.raiseStart();
 		while(true) {
-			if(isTurning==false)	
+			if(!isTurning) {
 			controler.passiveWait(0.1);
-			else if(isTurning) {
+			System.out.println("Advancing");
+			}
+			else  {
+				System.out.println("Turning in progress");
 				
 			}
 			

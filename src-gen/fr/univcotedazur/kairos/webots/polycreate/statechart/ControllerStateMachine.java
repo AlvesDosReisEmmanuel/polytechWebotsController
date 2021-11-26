@@ -22,17 +22,20 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 		MAIN_REGION_MOVING_INNER_REGION_FORWARD,
 		_REGION1_CHECKOBSTACLE,
 		_REGION1_STOPCHECKING,
+		FAKE_F,
 		$NULLSTATE$
 	};
 	
 	private State[] historyVector = new State[1];
-	private final State[] stateVector = new State[2];
+	private final State[] stateVector = new State[3];
 	
 	private ITimerService timerService;
 	
-	private final boolean[] timeEvents = new boolean[1];
+	private final boolean[] timeEvents = new boolean[2];
 	
+	private BlockingQueue<Runnable> internalEventQueue = new LinkedBlockingQueue<Runnable>();
 	private BlockingQueue<Runnable> inEventQueue = new LinkedBlockingQueue<Runnable>();
+	private boolean fakeEvent;
 	private boolean isExecuting;
 	
 	protected boolean getIsExecuting() {
@@ -60,7 +63,7 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 		}
 	}
 	public ControllerStateMachine() {
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < 3; i++) {
 			stateVector[i] = State.$NULLSTATE$;
 		}
 		for (int i = 0; i < 1; i++) {
@@ -68,7 +71,9 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 		}
 		
 		clearInEvents();
+		clearInternalEvents();
 		
+		setTurnFinished(false);
 		
 		isExecuting = false;
 	}
@@ -86,6 +91,7 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 		
 		enterSequence_main_region_default();
 		enterSequence__region1_default();
+		enterSequence_fake_default();
 		isExecuting = false;
 	}
 	
@@ -97,6 +103,7 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 		
 		exitSequence_main_region();
 		exitSequence__region1();
+		exitSequence_fake();
 		isExecuting = false;
 	}
 	
@@ -104,7 +111,7 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 	 * @see IStatemachine#isActive()
 	 */
 	public synchronized boolean isActive() {
-		return stateVector[0] != State.$NULLSTATE$||stateVector[1] != State.$NULLSTATE$;
+		return stateVector[0] != State.$NULLSTATE$||stateVector[1] != State.$NULLSTATE$||stateVector[2] != State.$NULLSTATE$;
 	}
 	
 	/** 
@@ -132,6 +139,11 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 		wasteGripped = false;
 		wasteReleased = false;
 		timeEvents[0] = false;
+		timeEvents[1] = false;
+	}
+	
+	private void clearInternalEvents() {
+		fakeEvent = false;
 	}
 	
 	private void microStep() {
@@ -180,6 +192,15 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 				break;
 			}
 		}
+		if (getStateConfVectorPosition()<2) {
+			switch (stateVector[2]) {
+			case FAKE_F:
+				transitioned = fake_f_react(transitioned);
+				break;
+			default:
+				break;
+			}
+		}
 	}
 	
 	private void runCycle() {
@@ -199,13 +220,19 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 			
 			clearInEvents();
 			
+			clearInternalEvents();
+			
 			nextEvent();
-		} while ((((((((((((((((myEvent || obstacleNear) || objectNear) || nothingInFront) || obstacleDetected) || noObstacle) || start) || rightObstacleDetected) || leftObstacleDetected) || stop) || nearWaste) || atGarbageDisposal) || wasteDetected) || wasteGripped) || wasteReleased) || timeEvents[0]));
+		} while ((((((((((((((((((myEvent || obstacleNear) || objectNear) || nothingInFront) || obstacleDetected) || noObstacle) || start) || rightObstacleDetected) || leftObstacleDetected) || stop) || nearWaste) || atGarbageDisposal) || wasteDetected) || wasteGripped) || wasteReleased) || fakeEvent) || timeEvents[0]) || timeEvents[1]));
 		
 		isExecuting = false;
 	}
 	
 	protected void nextEvent() {
+		if(!internalEventQueue.isEmpty()) {
+			internalEventQueue.poll().run();
+			return;
+		}
 		if(!inEventQueue.isEmpty()) {
 			inEventQueue.poll().run();
 			return;
@@ -243,6 +270,8 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 			return stateVector[1] == State._REGION1_CHECKOBSTACLE;
 		case _REGION1_STOPCHECKING:
 			return stateVector[1] == State._REGION1_STOPCHECKING;
+		case FAKE_F:
+			return stateVector[2] == State.FAKE_F;
 		default:
 			return false;
 		}
@@ -263,6 +292,12 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 		runCycle();
 	}
 	
+	
+	protected void raiseFakeEvent() {
+		internalEventQueue.add(() -> {
+			fakeEvent = true;
+		});
+	}
 	
 	private boolean myEvent;
 	
@@ -620,6 +655,20 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 		return releasingWasteObservable;
 	}
 	
+	private boolean turnFinished;
+	
+	public synchronized boolean getTurnFinished() {
+		synchronized(ControllerStateMachine.this) {
+			return turnFinished;
+		}
+	}
+	
+	public void setTurnFinished(boolean value) {
+		synchronized(ControllerStateMachine.this) {
+			this.turnFinished = value;
+		}
+	}
+	
 	/* Entry action for state 'DodgeRightObstacle'. */
 	private void entryAction_main_region_DodgeObstacle_r1_DodgeRightObstacle() {
 		raiseDodgeRightObstacle();
@@ -662,9 +711,19 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 		raiseCheckObstacle();
 	}
 	
+	/* Entry action for state 'f'. */
+	private void entryAction_fake_f() {
+		timerService.setTimer(this, 1, 100, true);
+	}
+	
 	/* Exit action for state 'checkObstacle'. */
 	private void exitAction__region1_checkObstacle() {
 		timerService.unsetTimer(this, 0);
+	}
+	
+	/* Exit action for state 'f'. */
+	private void exitAction_fake_f() {
+		timerService.unsetTimer(this, 1);
 	}
 	
 	/* 'default' enter sequence for state Stopped */
@@ -746,6 +805,13 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 		stateConfVectorPosition = 1;
 	}
 	
+	/* 'default' enter sequence for state f */
+	private void enterSequence_fake_f_default() {
+		entryAction_fake_f();
+		stateVector[2] = State.FAKE_F;
+		stateConfVectorPosition = 2;
+	}
+	
 	/* 'default' enter sequence for region main region */
 	private void enterSequence_main_region_default() {
 		react_main_region__entry_Default();
@@ -756,26 +822,14 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 		react_main_region_Moving_inner_region__entry_Default();
 	}
 	
-	/* deep enterSequence with history in child inner region */
-	private void deepEnterSequence_main_region_Moving_inner_region() {
-		switch (historyVector[0]) {
-		case MAIN_REGION_MOVING_INNER_REGION_WASTEGRABBED:
-			enterSequence_main_region_Moving_inner_region_WasteGrabbed_default();
-			break;
-		case MAIN_REGION_MOVING_INNER_REGION_WASTEDETECTED:
-			enterSequence_main_region_Moving_inner_region_WasteDetected_default();
-			break;
-		case MAIN_REGION_MOVING_INNER_REGION_FORWARD:
-			enterSequence_main_region_Moving_inner_region_Forward_default();
-			break;
-		default:
-			break;
-		}
-	}
-	
 	/* 'default' enter sequence for region null */
 	private void enterSequence__region1_default() {
 		react__region1__entry_Default();
+	}
+	
+	/* 'default' enter sequence for region fake */
+	private void enterSequence_fake_default() {
+		react_fake__entry_Default();
 	}
 	
 	/* Default exit sequence for state Stopped */
@@ -848,6 +902,14 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 	private void exitSequence__region1_StopChecking() {
 		stateVector[1] = State.$NULLSTATE$;
 		stateConfVectorPosition = 1;
+	}
+	
+	/* Default exit sequence for state f */
+	private void exitSequence_fake_f() {
+		stateVector[2] = State.$NULLSTATE$;
+		stateConfVectorPosition = 2;
+		
+		exitAction_fake_f();
 	}
 	
 	/* Default exit sequence for region main region */
@@ -927,19 +989,20 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 		}
 	}
 	
+	/* Default exit sequence for region fake */
+	private void exitSequence_fake() {
+		switch (stateVector[2]) {
+		case FAKE_F:
+			exitSequence_fake_f();
+			break;
+		default:
+			break;
+		}
+	}
+	
 	/* Default react sequence for initial entry  */
 	private void react_main_region__entry_Default() {
 		enterSequence_main_region_Stopped_default();
-	}
-	
-	/* Default react sequence for deep history entry History */
-	private void react_main_region_Moving_inner_region_History() {
-		/* Enter the region with deep history */
-		if (historyVector[0] != State.$NULLSTATE$) {
-			deepEnterSequence_main_region_Moving_inner_region();
-		} else {
-			enterSequence_main_region_Moving_inner_region_Forward_default();
-		}
 	}
 	
 	/* Default react sequence for initial entry  */
@@ -950,6 +1013,11 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 	/* Default react sequence for initial entry  */
 	private void react__region1__entry_Default() {
 		enterSequence__region1_checkObstacle_default();
+	}
+	
+	/* Default react sequence for initial entry  */
+	private void react_fake__entry_Default() {
+		enterSequence_fake_f_default();
 	}
 	
 	private long react(long transitioned_before) {
@@ -973,9 +1041,9 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 		long transitioned_after = transitioned_before;
 		
 		if (transitioned_after<0) {
-			if (noObstacle) {
+			if (getTurnFinished()) {
 				exitSequence_main_region_DodgeObstacle();
-				react_main_region_Moving_inner_region_History();
+				enterSequence_main_region_Moving_inner_region_Forward_default();
 				transitioned_after = 0;
 			}
 		}
@@ -1111,30 +1179,20 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 			if (timeEvents[0]) {
 				exitSequence__region1_checkObstacle();
 				enterSequence__region1_checkObstacle_default();
-				react(0);
-				
 				transitioned_after = 1;
 			} else {
 				if (leftObstacleDetected) {
 					exitSequence__region1_checkObstacle();
 					enterSequence__region1_StopChecking_default();
-					react(0);
-					
 					transitioned_after = 1;
 				} else {
 					if (rightObstacleDetected) {
 						exitSequence__region1_checkObstacle();
 						enterSequence__region1_StopChecking_default();
-						react(0);
-						
 						transitioned_after = 1;
 					}
 				}
 			}
-		}
-		/* If no transition was taken then execute local reactions */
-		if (transitioned_after==transitioned_before) {
-			transitioned_after = react(transitioned_before);
 		}
 		return transitioned_after;
 	}
@@ -1143,16 +1201,25 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 		long transitioned_after = transitioned_before;
 		
 		if (transitioned_after<1) {
-			if (noObstacle) {
+			if (getTurnFinished()) {
 				exitSequence__region1_StopChecking();
 				enterSequence__region1_checkObstacle_default();
-				react(0);
-				
 				transitioned_after = 1;
 			}
 		}
+		return transitioned_after;
+	}
+	
+	private long fake_f_react(long transitioned_before) {
+		long transitioned_after = transitioned_before;
+		
+		if (transitioned_after<2) {
+		}
 		/* If no transition was taken then execute local reactions */
 		if (transitioned_after==transitioned_before) {
+			if (timeEvents[1]) {
+				raiseFakeEvent();
+			}
 			transitioned_after = react(transitioned_before);
 		}
 		return transitioned_after;
