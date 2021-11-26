@@ -117,8 +117,7 @@ public class PolyCreateControler extends Supervisor {
 	}
 
 	boolean isThereObstacleLeftForTurning() {
-		if (isThereCollisionAtLeft() || frontLeftDistanceSensor.getValue() < 1000
-				|| frontDistanceSensor.getValue() < 250) {
+		if (isThereCollisionAtLeft() || frontDistanceSensor.getValue() < 250) {
 			return true;
 		} else
 			return false;
@@ -232,11 +231,11 @@ public class PolyCreateControler extends Supervisor {
 				System.out.print("Stopped State ? ");
 				System.out.println(theFSM.isStateActive(State.MAIN_REGION_STOPPED));
 
-				System.out.print("CheckObstacle State ? ");
-				System.out.println(theFSM.isStateActive(State.R2_CHECKOBSTACLE));
+				//System.out.print("CheckObstacle State ? ");
+				//System.out.println(theFSM.isStateActive(State.R2_CHECKOBSTACLE));
 
-				System.out.print("StopChecking State ? ");
-				System.out.println(theFSM.isStateActive(State.R2_STOPCHECKING));
+				//System.out.print("StopChecking State ? ");
+				//System.out.println(theFSM.isStateActive(State.R2_STOPCHECKING));
 
 				System.out.print("Fake State ? ");
 				System.out.println(theFSM.isStateActive(State.FAKE_F));
