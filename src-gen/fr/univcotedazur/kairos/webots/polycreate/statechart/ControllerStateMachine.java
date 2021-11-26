@@ -1036,6 +1036,17 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 		long transitioned_after = transitioned_before;
 		
 		if (transitioned_after<0) {
+			if (leftObstacleDetected) {
+				exitSequence_main_region_Moving();
+				enterSequence_main_region_DodgeObstacle_r1_DodgeLeftObstacle_default();
+				transitioned_after = 0;
+			} else {
+				if (rightObstacleDetected) {
+					exitSequence_main_region_Moving();
+					enterSequence_main_region_DodgeObstacle_r1_DodgeRightObstacle_default();
+					transitioned_after = 0;
+				}
+			}
 		}
 		return transitioned_after;
 	}
@@ -1084,18 +1095,6 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 				main_region_Moving_react(0);
 				
 				transitioned_after = 0;
-			} else {
-				if (rightObstacleDetected) {
-					exitSequence_main_region_Moving();
-					enterSequence_main_region_DodgeObstacle_r1_DodgeRightObstacle_default();
-					transitioned_after = 0;
-				} else {
-					if (leftObstacleDetected) {
-						exitSequence_main_region_Moving();
-						enterSequence_main_region_DodgeObstacle_r1_DodgeLeftObstacle_default();
-						transitioned_after = 0;
-					}
-				}
 			}
 		}
 		/* If no transition was taken then execute local reactions */
