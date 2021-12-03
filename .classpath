@@ -5,14 +5,9 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" path="fr.univcotedazur.kairos.webots.polycreate.controler/src">
-		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/Users/doudo/Documents/GitHub/polytechWebotsController/fr.univcotedazur.kairos.webots.polycreate.controler/webotsLibs"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="src" path="src">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/Users/user/Documents/FSM/Projet/polytechWebotsController/fr.univcotedazur.kairos.webots.polycreate.controler/webotsLibs"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="polytechWebotsController/fr.univcotedazur.kairos.webots.polycreate.controler/webotsLibs"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src-gen"/>

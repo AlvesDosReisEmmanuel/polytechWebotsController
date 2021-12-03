@@ -17,16 +17,13 @@ import java.util.Random;
 //import org.eclipse.january.dataset.DatasetFactory;
 
 import com.cyberbotics.webots.controller.Camera;
-import com.cyberbotics.webots.controller.CameraRecognitionObject;
 import com.cyberbotics.webots.controller.DistanceSensor;
 import com.cyberbotics.webots.controller.GPS;
 import com.cyberbotics.webots.controller.LED;
 import com.cyberbotics.webots.controller.Motor;
-import com.cyberbotics.webots.controller.Node;
 import com.cyberbotics.webots.controller.Pen;
 import com.cyberbotics.webots.controller.PositionSensor;
 import com.cyberbotics.webots.controller.Receiver;
-import com.cyberbotics.webots.controller.Robot;
 import com.cyberbotics.webots.controller.Supervisor;
 import com.cyberbotics.webots.controller.TouchSensor;
 import com.yakindu.core.TimerService;
@@ -214,6 +211,7 @@ public class PolyCreateControler extends Supervisor {
 			@Override
 			public void next(Void value) {
 				isTurning = true;
+				/*
 				System.out.println("DodgingObstacle");
 
 				System.out.print("ObstacleDetectedBool : ");
@@ -233,15 +231,17 @@ public class PolyCreateControler extends Supervisor {
 
 				//System.out.print("CheckObstacle State ? ");
 				//System.out.println(theFSM.isStateActive(State.R2_CHECKOBSTACLE));
-
-				//System.out.print("StopChecking State ? ");
-				//System.out.println(theFSM.isStateActive(State.R2_STOPCHECKING));
+				System.out.print("StopChecking State ? ");System.out.println(theFSM.isStateActive(State.R2_STOPCHECKING));
+				//
+				//
 
 				System.out.print("Fake State ? ");
 				System.out.println(theFSM.isStateActive(State.FAKE_F));
 
 				System.out.print("Turning value: ");
 				System.out.println(isTurning);
+				*/
+				
 				goBackward();
 				passiveWait(0.5);
 				System.out.println("goBackward");
@@ -272,7 +272,7 @@ public class PolyCreateControler extends Supervisor {
 		theFSM.getCheckObstacle().subscribe(new MyObserver() {
 			@Override
 			public void next(Void value) {
-				System.out.print("Wow");
+				//System.out.print("Wow");
 				/*
 				 * if(isThereObstacleRight()&&isThereObstacleLeft()) {
 				 * System.out.println("Left && Right Detected");
@@ -424,7 +424,7 @@ public class PolyCreateControler extends Supervisor {
 			} else {
 				 //System.out.println("Turning in progress");
 				try {
-					// System.out.println("Turning in progress");
+					System.out.println("Sleeping");
 					Thread.sleep(10);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
