@@ -25,7 +25,18 @@ import com.cyberbotics.webots.controller.PositionSensor;
 import com.cyberbotics.webots.controller.Receiver;
 import com.cyberbotics.webots.controller.Supervisor;
 import com.cyberbotics.webots.controller.TouchSensor;
+import com.yakindu.core.TimerService;
+import com.yakindu.core.rx.Observer;
 
+import fr.univcotedazur.kairos.webots.polycreate.statechart.ControllerStateMachine;
+import fr.univcotedazur.kairos.webots.polycreate.statechart.ControllerStateMachine.State;
+
+class MyObserver implements Observer<Void> {
+	@Override
+	public void next(Void value) {
+		
+	}
+}
 
 public class PolyCreateControler extends Supervisor {
 
@@ -38,7 +49,7 @@ public class PolyCreateControler extends Supervisor {
 	static double AXLE_LENGTH = 0.271756;
 	static double ENCODER_RESOLUTION = 507.9188;
 	static double turnPrecision= 0.05;
-
+	protected ControllerStateMachine theFSM;
 
 	/**
 	 * the inkEvaporation parameter in the WorldInfo element of the robot scene may be interesting to access
@@ -48,7 +59,35 @@ public class PolyCreateControler extends Supervisor {
 	public Pen getPen() {
 		return pen;
 	}
-
+	boolean isThereObstacleRight() {
+		if (isThereCollisionAtRight() || frontRightDistanceSensor.getValue() < 250
+				|| frontDistanceSensor.getValue() < 250) {
+			return true;
+		} else
+			return false;
+	}
+	
+	boolean isThereObstacleRightForTurning() {
+		if (isThereCollisionAtRight() || frontRightDistanceSensor.getValue() < 1000) {
+			return true;
+		} else
+			return false;
+	}
+	
+	boolean isThereObstacleLeftForTurning() {
+		if (isThereCollisionAtLeft() || frontLeftDistanceSensor.getValue() < 1000
+				|| frontDistanceSensor.getValue() < 250) {
+			return true;
+		} else
+			return false;
+	}
+	
+	boolean isThereObstacleLeft() {
+		if (isThereCollisionAtLeft() || frontLeftDistanceSensor.getValue() < 250) {
+			return true;
+		} else
+			return false;
+	}
 
 	public Motor[] gripMotors = new Motor[2];
 	public DistanceSensor gripperSensor = null;
@@ -85,7 +124,7 @@ public class PolyCreateControler extends Supervisor {
 	public 	int timestep = Integer.MAX_VALUE;
 	public 	Random random = new Random();
 
-	private boolean isTurning = false;
+	static boolean isTurning = false;
 
 	public PolyCreateControler() {
 		timestep = (int) Math.round(this.getBasicTimeStep());
@@ -148,15 +187,118 @@ public class PolyCreateControler extends Supervisor {
 		gps.enable(timestep);
 
 		PolyCreateControler ctrl = this;
-		Runtime.getRuntime().addShutdownHook(new Thread()
-		{
+		theFSM = new ControllerStateMachine();
+		TimerService timer = new TimerService();
+		theFSM.setTimerService(timer);
+		
+		
+		theFSM.getGoForward().subscribe(new MyObserver() {
 			@Override
-			public void run()
-			{
+			public void next(Void value) {
+				goForward();
+
+				theFSM.setObstacleDetectedBool(false);
+				
+				System.out.println("Raise goForward");
+				// System.out.println(isTurning);
+				// theFSM.setTurnFinished(false);
+			}
+		});
+		
+		theFSM.getDodgeObstacle().subscribe(new MyObserver() {
+			@Override
+			public void next(Void value) {
+				System.out.println("DodgingObstacle");
+				
+				System.out.print("ObstacleDetectedBool : ");
+				System.out.println(theFSM.getObstacleDetectedBool());
+				
+				System.out.print("Null State ? ");
+				System.out.println(theFSM.isStateActive(State.$NULLSTATE$));
+				
+				System.out.print("DodgeObstacle State ? ");
+				System.out.println(theFSM.isStateActive(State.MAIN_REGION_DODGEOBSTACLE));
+				
+				System.out.print("Moving Forward State ? ");
+				System.out.println(theFSM.isStateActive(State.MAIN_REGION_MOVING_INNER_REGION_FORWARD));
+				
+				System.out.print("CheckObstacle ?");
+				System.out.println(theFSM.isStateActive(State.R2_CHECKOBSTACLE));
+				
+				System.out.print("Stopped State ? ");
+				System.out.println(theFSM.isStateActive(State.MAIN_REGION_STOPPED));
+				
+				
+				System.out.print("Turning value: ");
+				System.out.println(isTurning);
+				goBackward();
+				passiveWait(0.5);
+				System.out.println("goBackward");
+				while (isThereObstacleLeftForTurning()) {
+					turn(45 * Math.PI / 180);
+				}
+				System.out.println("Raise NoObstacle");
+				theFSM.setObstacleDetectedBool(false);
+				// theFSM.setTurnFinished(true);
+}
+			
+		});
+		/**
+		 * theFSM.getDodgeLeftObstacle().subscribe(new MyObserver() {
+		 * 
+		 * @Override public void next(Void value) { isTurning=true;
+		 *           System.out.println("DodgingLeftObstacle");
+		 *           System.out.println(isTurning); goBackward(); passiveWait(0.5);
+		 *           while(isThereObstacleRightForTurning()) { turn(-45*Math.PI/180); }
+		 *           isTurning=false; System.out.println("RaisingNoObstacle");
+		 *           theFSM.raiseNoObstacle(); //theFSM.setTurnFinished(true);
+		 * 
+		 *           } });
+		 */
+		
+		theFSM.getCheckObstacle().subscribe(new MyObserver() {
+			@Override
+			public void next(Void value) {
+				//System.out.print("Wow");
+				/*
+				 * if(isThereObstacleRight()&&isThereObstacleLeft()) {
+				 * System.out.println("Left && Right Detected");
+				 * theFSM.raiseRightObstacleDetected(); } else if(isThereCollisionAtLeft() ||
+				 * frontLeftDistanceSensor.getValue() < 250) {
+				 * theFSM.raiseLeftObstacleDetected();
+				 * System.out.println("LeftObstacleDetected");
+				 * 
+				 * } else if(isThereCollisionAtRight()|| frontRightDistanceSensor.getValue() <
+				 * 250 ||frontDistanceSensor.getValue() < 250) {
+				 * theFSM.raiseRightObstacleDetected();
+				 * System.out.println("RightObstacleDetected");
+				 * 
+				 * }
+				 */
+				
+				// passiveWait(1);
+				if (isThereObstacleRight() || isThereObstacleLeft()) {
+					System.out.println("raise ObstacleDetected");
+					theFSM.raiseObstacleDetected();
+					theFSM.setObstacleDetectedBool(true);
+				}
+			}
+		});
+		
+		
+				
+		
+		
+		 theFSM.enter();
+		 
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
 				System.out.println("Shutdown hook ran!");
 				ctrl.delete();
 			}
 		});
+		
 	}
 
 
@@ -198,6 +340,7 @@ public class PolyCreateControler extends Supervisor {
 	public void goForward() {
 		leftMotor.setVelocity(MAX_SPEED);
 		rightMotor.setVelocity(MAX_SPEED);
+		this.flushIRReceiver();
 	}
 
 	public void goBackward() {
@@ -278,8 +421,26 @@ public class PolyCreateControler extends Supervisor {
 
 	public static void main(String[] args) {
 		PolyCreateControler controler = new PolyCreateControler();
-
-		try {
+		controler.openGripper();
+		controler.pen.write(true);
+		controler.ledOn.set(1);
+		controler.theFSM.raiseStart();
+		
+		while(true) {
+			if (!isTurning) {
+				controler.passiveWait(0.5);
+			}
+			else {
+				try {
+					Thread.sleep(10);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		/*
+		 try {
 			controler.openGripper();
 			controler.pen.write(true);
 			controler.ledOn.set(1);
@@ -290,6 +451,7 @@ public class PolyCreateControler extends Supervisor {
 				 * The position and orientation are expressed relatively to the camera (the relative position is the one of the center of the object which can differ from its origin) and the units are meter and radian.
 				 * https://www.cyberbotics.com/doc/reference/camera?tab-language=python#wb_camera_has_recognition
 				 */
+		/*
 				Node anObj = controler.getFromDef("can"); //should not be there, only to have another orientation for testing...
 				controler.passiveWait(0.1);
 				
@@ -307,6 +469,7 @@ public class PolyCreateControler extends Supervisor {
 					/**
 					 * The position and orientation are expressed relatively to the camera (the relative position is the one of the center of the object which can differ from its origin) and the units are meter and radian.
 					 */
+		/*
 					System.out.println("        I saw an object on back Camera at : "+backObjPos[0]+","+backObjPos[1]);
 				}
 				CameraRecognitionObject[] frontObjs = controler.frontCamera.getRecognitionObjects();
@@ -343,10 +506,7 @@ public class PolyCreateControler extends Supervisor {
 		}catch (Exception e) {
 			controler.delete();
 		}
-
-
-
-
+		*/
 	}
 
 
