@@ -1002,7 +1002,7 @@ public class ControllerStateMachine implements IStatemachine, ITimed {
 		long transitioned_after = transitioned_before;
 		
 		if (transitioned_after<0) {
-			if (noObstacle) {
+			if (getTurnFinished()) {
 				exitSequence_main_region_DodgeObstacle();
 				react_main_region_Moving_inner_region_History();
 				transitioned_after = 0;

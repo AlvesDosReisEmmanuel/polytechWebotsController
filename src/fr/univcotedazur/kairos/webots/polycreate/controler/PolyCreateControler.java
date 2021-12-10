@@ -201,13 +201,14 @@ public class PolyCreateControler extends Supervisor {
 				
 				System.out.println("Raise goForward");
 				// System.out.println(isTurning);
-				// theFSM.setTurnFinished(false);
+				//theFSM.setTurnFinished(false);
 			}
 		});
 		
 		theFSM.getDodgeObstacle().subscribe(new MyObserver() {
 			@Override
 			public void next(Void value) {
+				
 				System.out.println("DodgingObstacle");
 				
 				System.out.print("ObstacleDetectedBool : ");
@@ -234,12 +235,13 @@ public class PolyCreateControler extends Supervisor {
 				goBackward();
 				passiveWait(0.5);
 				System.out.println("goBackward");
-				while (isThereObstacleLeftForTurning()) {
+				do {
 					turn(45 * Math.PI / 180);
 				}
+				while (isThereObstacleLeft()||isThereObstacleRight());
 				System.out.println("Raise NoObstacle");
 				theFSM.setObstacleDetectedBool(false);
-				// theFSM.setTurnFinished(true);
+				theFSM.setTurnFinished(true);
 }
 			
 		});
