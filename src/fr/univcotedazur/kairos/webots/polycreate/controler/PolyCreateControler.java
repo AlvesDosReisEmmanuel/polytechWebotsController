@@ -55,40 +55,7 @@ public class PolyCreateControler extends Supervisor {
 	 * the inkEvaporation parameter in the WorldInfo element of the robot scene may be interesting to access
 	 */
 	public Pen pen = null;
-
-	public Pen getPen() {
-		return pen;
-	}
-	boolean isThereObstacleRight() {
-		if (isThereCollisionAtRight() || frontRightDistanceSensor.getValue() < 250
-				|| frontDistanceSensor.getValue() < 250) {
-			return true;
-		} else
-			return false;
-	}
 	
-	boolean isThereObstacleRightForTurning() {
-		if (isThereCollisionAtRight() || frontRightDistanceSensor.getValue() < 1000) {
-			return true;
-		} else
-			return false;
-	}
-	
-	boolean isThereObstacleLeftForTurning() {
-		if (isThereCollisionAtLeft() || frontLeftDistanceSensor.getValue() < 1000
-				|| frontDistanceSensor.getValue() < 250) {
-			return true;
-		} else
-			return false;
-	}
-	
-	boolean isThereObstacleLeft() {
-		if (isThereCollisionAtLeft() || frontLeftDistanceSensor.getValue() < 250) {
-			return true;
-		} else
-			return false;
-	}
-
 	public Motor[] gripMotors = new Motor[2];
 	public DistanceSensor gripperSensor = null;
 
@@ -196,54 +163,33 @@ public class PolyCreateControler extends Supervisor {
 			@Override
 			public void next(Void value) {
 				goForward();
-
 				theFSM.setObstacleDetectedBool(false);
-				
 				System.out.println("Raise goForward");
-				// System.out.println(isTurning);
-				//theFSM.setTurnFinished(false);
 			}
 		});
 		
 		theFSM.getDodgeObstacle().subscribe(new MyObserver() {
 			@Override
 			public void next(Void value) {
-				
-				System.out.println("DodgingObstacle");
-				
-				System.out.print("ObstacleDetectedBool : ");
-				System.out.println(theFSM.getObstacleDetectedBool());
-				
-				System.out.print("Null State ? ");
-				System.out.println(theFSM.isStateActive(State.$NULLSTATE$));
-				
-				System.out.print("DodgeObstacle State ? ");
-				System.out.println(theFSM.isStateActive(State.MAIN_REGION_DODGEOBSTACLE));
-				
-				System.out.print("Moving Forward State ? ");
-				System.out.println(theFSM.isStateActive(State.MAIN_REGION_MOVING_INNER_REGION_FORWARD));
-				
-				System.out.print("CheckObstacle ?");
-				System.out.println(theFSM.isStateActive(State.R2_CHECKOBSTACLE));
-				
-				System.out.print("Stopped State ? ");
-				System.out.println(theFSM.isStateActive(State.MAIN_REGION_STOPPED));
-				
-				
-				System.out.print("Turning value: ");
-				System.out.println(isTurning);
-				goBackward();
-				passiveWait(0.5);
-				System.out.println("goBackward");
-				do {
-					turn(45 * Math.PI / 180);
-				}
-				while (isThereObstacleLeft()||isThereObstacleRight());
+				if(isThereCollisionAtLeft() || frontLeftDistanceSensor.getValue() < 250){
+					System.out.println("Left obstacle detected\n");
+					goBackward();
+					passiveWait(0.5);
+					turn(Math.PI * randdouble()+0.6);
+				}else if(isThereCollisionAtRight() || frontRightDistanceSensor.getValue() < 250 || frontDistanceSensor.getValue() < 250) {
+					System.out.println("Right obstacle detected\n");
+					goBackward();
+					passiveWait(0.5);
+					turn(-Math.PI * randdouble()+0.6);
+				}else if(isThereVirtualwall()) {
+					System.out.println("Virtual wall detected\n");
+					turn(Math.PI);
+				}	
 				System.out.println("Raise NoObstacle");
 				theFSM.setObstacleDetectedBool(false);
 				theFSM.setTurnFinished(true);
-}
-			
+					
+			}		
 		});
 		/**
 		 * theFSM.getDodgeLeftObstacle().subscribe(new MyObserver() {
@@ -261,25 +207,7 @@ public class PolyCreateControler extends Supervisor {
 		theFSM.getCheckObstacle().subscribe(new MyObserver() {
 			@Override
 			public void next(Void value) {
-				//System.out.print("Wow");
-				/*
-				 * if(isThereObstacleRight()&&isThereObstacleLeft()) {
-				 * System.out.println("Left && Right Detected");
-				 * theFSM.raiseRightObstacleDetected(); } else if(isThereCollisionAtLeft() ||
-				 * frontLeftDistanceSensor.getValue() < 250) {
-				 * theFSM.raiseLeftObstacleDetected();
-				 * System.out.println("LeftObstacleDetected");
-				 * 
-				 * } else if(isThereCollisionAtRight()|| frontRightDistanceSensor.getValue() <
-				 * 250 ||frontDistanceSensor.getValue() < 250) {
-				 * theFSM.raiseRightObstacleDetected();
-				 * System.out.println("RightObstacleDetected");
-				 * 
-				 * }
-				 */
-				
-				// passiveWait(1);
-				if (isThereObstacleRight() || isThereObstacleLeft()) {
+				if (isThereCollisionAtRight() || isThereCollisionAtLeft()) {
 					System.out.println("raise ObstacleDetected");
 					theFSM.raiseObstacleDetected();
 					theFSM.setObstacleDetectedBool(true);
