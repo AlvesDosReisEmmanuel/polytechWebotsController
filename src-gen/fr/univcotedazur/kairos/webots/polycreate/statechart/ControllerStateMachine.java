@@ -49,9 +49,6 @@ public class ControllerStateMachine implements IStatemachine {
 		
 		clearInEvents();
 		
-		setObstacleDetectedBool(false);
-		
-		setTurnFinished(false);
 		
 		isExecuting = false;
 	}
@@ -94,15 +91,11 @@ public class ControllerStateMachine implements IStatemachine {
 		return false;
 	}
 	private void clearInEvents() {
-		myEvent = false;
-		obstacleNear = false;
 		frontRight = false;
 		frontLeft = false;
 		front = false;
 		clear = false;
 		virtualWall = false;
-		obstacleDetected = false;
-		noObstacle = false;
 		start = false;
 		stop = false;
 		nearWaste = false;
@@ -161,7 +154,7 @@ public class ControllerStateMachine implements IStatemachine {
 			clearInEvents();
 			
 			nextEvent();
-		} while ((((((((((((((((myEvent || obstacleNear) || frontRight) || frontLeft) || front) || clear) || virtualWall) || obstacleDetected) || noObstacle) || start) || stop) || nearWaste) || atGarbageDisposal) || wasteDetected) || wasteGripped) || wasteReleased));
+		} while ((((((((((((frontRight || frontLeft) || front) || clear) || virtualWall) || start) || stop) || nearWaste) || atGarbageDisposal) || wasteDetected) || wasteGripped) || wasteReleased));
 		
 		isExecuting = false;
 	}
@@ -207,30 +200,6 @@ public class ControllerStateMachine implements IStatemachine {
 		}
 	}
 	
-	
-	private boolean myEvent;
-	
-	
-	public void raiseMyEvent() {
-		synchronized(ControllerStateMachine.this) {
-			inEventQueue.add(() -> {
-				myEvent = true;
-			});
-			runCycle();
-		}
-	}
-	
-	private boolean obstacleNear;
-	
-	
-	public void raiseObstacleNear() {
-		synchronized(ControllerStateMachine.this) {
-			inEventQueue.add(() -> {
-				obstacleNear = true;
-			});
-			runCycle();
-		}
-	}
 	
 	private boolean frontRight;
 	
@@ -287,30 +256,6 @@ public class ControllerStateMachine implements IStatemachine {
 		synchronized(ControllerStateMachine.this) {
 			inEventQueue.add(() -> {
 				virtualWall = true;
-			});
-			runCycle();
-		}
-	}
-	
-	private boolean obstacleDetected;
-	
-	
-	public void raiseObstacleDetected() {
-		synchronized(ControllerStateMachine.this) {
-			inEventQueue.add(() -> {
-				obstacleDetected = true;
-			});
-			runCycle();
-		}
-	}
-	
-	private boolean noObstacle;
-	
-	
-	public void raiseNoObstacle() {
-		synchronized(ControllerStateMachine.this) {
-			inEventQueue.add(() -> {
-				noObstacle = true;
 			});
 			runCycle();
 		}
@@ -480,38 +425,6 @@ public class ControllerStateMachine implements IStatemachine {
 		return goBackwardObservable;
 	}
 	
-	private boolean dodgeObstacle;
-	
-	
-	protected void raiseDodgeObstacle() {
-		synchronized(ControllerStateMachine.this) {
-			dodgeObstacle = true;
-			dodgeObstacleObservable.next(null);
-		}
-	}
-	
-	private Observable<Void> dodgeObstacleObservable = new Observable<Void>();
-	
-	public Observable<Void> getDodgeObstacle() {
-		return dodgeObstacleObservable;
-	}
-	
-	private boolean checkObstacle;
-	
-	
-	protected void raiseCheckObstacle() {
-		synchronized(ControllerStateMachine.this) {
-			checkObstacle = true;
-			checkObstacleObservable.next(null);
-		}
-	}
-	
-	private Observable<Void> checkObstacleObservable = new Observable<Void>();
-	
-	public Observable<Void> getCheckObstacle() {
-		return checkObstacleObservable;
-	}
-	
 	private boolean goToWaste;
 	
 	
@@ -574,34 +487,6 @@ public class ControllerStateMachine implements IStatemachine {
 	
 	public Observable<Void> getReleasingWaste() {
 		return releasingWasteObservable;
-	}
-	
-	private boolean obstacleDetectedBool;
-	
-	public synchronized boolean getObstacleDetectedBool() {
-		synchronized(ControllerStateMachine.this) {
-			return obstacleDetectedBool;
-		}
-	}
-	
-	public void setObstacleDetectedBool(boolean value) {
-		synchronized(ControllerStateMachine.this) {
-			this.obstacleDetectedBool = value;
-		}
-	}
-	
-	private boolean turnFinished;
-	
-	public synchronized boolean getTurnFinished() {
-		synchronized(ControllerStateMachine.this) {
-			return turnFinished;
-		}
-	}
-	
-	public void setTurnFinished(boolean value) {
-		synchronized(ControllerStateMachine.this) {
-			this.turnFinished = value;
-		}
 	}
 	
 	/* Entry action for state 'ReleasingWaste'. */
