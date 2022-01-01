@@ -160,6 +160,7 @@ public class PolyCreateControler extends Supervisor {
 		theFSM.getGoBackward().subscribe(new GoBackwardObserver(this));
 		theFSM.getTurnLeft().subscribe(new TurnLeftObserver(this));
 		theFSM.getTurnRight().subscribe(new TurnRightObserver(this));
+		theFSM.getFullTurn().subscribe(new FullTurnObserver(this));
 
 		theFSM.enter();
 		
