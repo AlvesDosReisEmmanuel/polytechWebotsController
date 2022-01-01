@@ -27,7 +27,6 @@ import com.cyberbotics.webots.controller.Supervisor;
 import com.cyberbotics.webots.controller.TouchSensor;
 import com.yakindu.core.TimerService;
 import com.yakindu.core.rx.Observer;
-
 import fr.univcotedazur.kairos.webots.polycreate.statechart.ControllerStateMachine;
 import fr.univcotedazur.kairos.webots.polycreate.statechart.ControllerStateMachine.State;
 
@@ -155,72 +154,7 @@ public class PolyCreateControler extends Supervisor {
 
 		PolyCreateControler ctrl = this;
 		theFSM = new ControllerStateMachine();
-		TimerService timer = new TimerService();
-		theFSM.setTimerService(timer);
 		
-		
-		theFSM.getGoForward().subscribe(new MyObserver() {
-			@Override
-			public void next(Void value) {
-				goForward();
-				theFSM.setObstacleDetectedBool(false);
-				System.out.println("Raise goForward");
-			}
-		});
-		
-		theFSM.getDodgeObstacle().subscribe(new MyObserver() {
-			@Override
-			public void next(Void value) {
-				if(isThereCollisionAtLeft() || frontLeftDistanceSensor.getValue() < 250){
-					System.out.println("Left obstacle detected\n");
-					goBackward();
-					passiveWait(0.5);
-					turn(Math.PI * randdouble()+0.6);
-				}else if(isThereCollisionAtRight() || frontRightDistanceSensor.getValue() < 250 || frontDistanceSensor.getValue() < 250) {
-					System.out.println("Right obstacle detected\n");
-					goBackward();
-					passiveWait(0.5);
-					turn(-Math.PI * randdouble()+0.6);
-				}else if(isThereVirtualwall()) {
-					System.out.println("Virtual wall detected\n");
-					turn(Math.PI);
-				}	
-				System.out.println("Raise NoObstacle");
-				theFSM.setObstacleDetectedBool(false);
-				theFSM.setTurnFinished(true);
-					
-			}		
-		});
-		/**
-		 * theFSM.getDodgeLeftObstacle().subscribe(new MyObserver() {
-		 * 
-		 * @Override public void next(Void value) { isTurning=true;
-		 *           System.out.println("DodgingLeftObstacle");
-		 *           System.out.println(isTurning); goBackward(); passiveWait(0.5);
-		 *           while(isThereObstacleRightForTurning()) { turn(-45*Math.PI/180); }
-		 *           isTurning=false; System.out.println("RaisingNoObstacle");
-		 *           theFSM.raiseNoObstacle(); //theFSM.setTurnFinished(true);
-		 * 
-		 *           } });
-		 */
-		
-		theFSM.getCheckObstacle().subscribe(new MyObserver() {
-			@Override
-			public void next(Void value) {
-				if (isThereCollisionAtRight() || isThereCollisionAtLeft()) {
-					System.out.println("raise ObstacleDetected");
-					theFSM.raiseObstacleDetected();
-					theFSM.setObstacleDetectedBool(true);
-				}
-			}
-		});
-		
-		
-				
-		
-		
-		 theFSM.enter();
-		 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
@@ -229,6 +163,51 @@ public class PolyCreateControler extends Supervisor {
 			}
 		});
 		
+		theFSM.getGoForward().subscribe(new GoForwardObserver(this));
+		theFSM.getGoBackward().subscribe(new GoBackwardObserver(this));
+		theFSM.getTurnLeft().subscribe(new TurnLeftObserver(this));
+		theFSM.getTurnRight().subscribe(new TurnRightObserver(this));
+
+		theFSM.enter();
+		
+	}
+	
+	public void next(){
+		if(isThereVirtualwall()) {
+			System.out.println("Virtual wall detected\n");
+			theFSM.raiseVirtualWall();
+		} else if(isThereCollisionAtLeft() || frontLeftDistanceSensor.getValue() < 250) {
+			System.out.println("Left obstacle detected\n");
+			theFSM.raiseFrontLeft();
+			passiveWait(0.5);
+		} else if (isThereCollisionAtRight() || frontRightDistanceSensor.getValue() < 250 ||frontDistanceSensor.getValue() < 250) {
+			System.out.println("Right obstacle detected\n");
+			theFSM.raiseFrontRight();
+			theFSM.raiseFrontLeft();
+			passiveWait(0.5);
+		} else {
+			theFSM.raiseClear();
+		}
+	}
+	
+	public void doGoForward() {
+		goForward();
+	}
+
+	public void doGoBackward() {
+		goBackward();
+	}
+	
+	public void turnLeft() {
+		turn(-Math.PI * this.randdouble() - 0.6);
+	}
+
+	public void turnRight() {
+		turn(Math.PI * this.randdouble() + 0.6);
+	}
+
+	public void FullTurn() {
+		turn(Math.PI);
 	}
 
 
@@ -317,22 +296,25 @@ public class PolyCreateControler extends Supervisor {
 	 * @param angle: the angle to apply
 	 */
 	void turn(double angle) {
-		this.isTurning=true;
-		stop();
-		doStep();
-		double direction = (angle < 0.0) ? -1.0 : 1.0;
-		leftMotor.setVelocity(direction * HALF_SPEED);
-		rightMotor.setVelocity(-direction * HALF_SPEED);
-		double targetOrientation = (this.getOrientation()+angle)%(2*Math.PI);
-		double actualOrientation;
-		System.out.println("do");
-		do {
-			doStep();
-			actualOrientation = this.getOrientation();
-		} while (!(actualOrientation > (targetOrientation -turnPrecision) && actualOrientation < (targetOrientation + turnPrecision)));
-		stop();
-		doStep();
 		this.isTurning=false;
+		stop();
+		double l_offset = leftSensor.getValue();
+		double r_offset = rightSensor.getValue();
+		step(timestep);
+		double neg = (angle < 0.0) ? -1.0 : 1.0;
+		leftMotor.setVelocity(neg * HALF_SPEED);
+		rightMotor.setVelocity(-neg * HALF_SPEED);
+		double orientation;
+		do {
+			double l = leftSensor.getValue() - l_offset;
+			double r = rightSensor.getValue() - r_offset;
+			double dl = l * WHEEL_RADIUS; // distance covered by left wheel in meter
+			double dr = r * WHEEL_RADIUS; // distance covered by right wheel in meter
+			orientation = neg * (dl - dr) / AXLE_LENGTH; // delta orientation in radian
+			step(timestep);
+		} while (orientation < neg * angle);
+		stop();
+		step(timestep);
 	}
 
 
@@ -357,17 +339,8 @@ public class PolyCreateControler extends Supervisor {
 		controler.theFSM.raiseStart();
 		
 		while(true) {
-			if (!isTurning) {
-				controler.passiveWait(0.5);
-			}
-			else {
-				try {
-					Thread.sleep(10);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
+			controler.passiveWait(0.1);
+			controler.next();
 		}
 		/*
 		 try {

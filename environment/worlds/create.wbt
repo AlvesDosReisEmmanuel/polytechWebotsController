@@ -12,7 +12,7 @@ WorldInfo {
 }
 Viewpoint {
   orientation 0.7908693603383237 0.46593691125744024 0.39677254139610896 4.638520835158328
-  position -3.155698322165908 13.51253758852321 5.7994523591156675
+  position -3.1095413453649283 13.155741090071178 5.765029301699142
   near 0.1
   follow "Create"
 }
@@ -80,7 +80,7 @@ Wall {
   size 1.3 2.4 0.3
 }
 Door {
-  hidden translation_5 1.5320464896717567e-09 0 0.0010000036568935666
+  hidden translation_5 1.598657206614007e-09 0 0.001000003815888939
   translation 0 0 1.65
   rotation 0 1 0 3.14159
   size 1 2.4 0.3
@@ -1175,6 +1175,7 @@ DEF IROBOT_CREATE Robot {
           appearance PBRAppearance {
             baseColor 0 0.258824 0.0117647
             metalness 0
+            emissiveColor 1 0 0
           }
           geometry IndexedFaceSet {
             coord DEF coord_LEDon Coordinate {
