@@ -30,13 +30,6 @@ import com.yakindu.core.rx.Observer;
 import fr.univcotedazur.kairos.webots.polycreate.statechart.ControllerStateMachine;
 import fr.univcotedazur.kairos.webots.polycreate.statechart.ControllerStateMachine.State;
 
-class MyObserver implements Observer<Void> {
-	@Override
-	public void next(Void value) {
-		
-	}
-}
-
 public class PolyCreateControler extends Supervisor {
 
 	static int MAX_SPEED = 16;
