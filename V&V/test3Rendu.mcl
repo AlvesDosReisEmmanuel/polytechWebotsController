@@ -1,0 +1,14 @@
+library 
+    macros.mcl
+end_library
+
+(*test3.ysc*)
+
+(*Quand je rentre dans dodgeObstacle inévitablement je rentre dans Forward (TRUE)*)
+(*[true* .isPresent("dodgeObstacle","entering")] INEV("Forward","entering")*)
+
+(*Quand je sors de dodgeObstacle éventuellement je rentre dans Forward et je rentre dans checkObstacle (TRUE)*)
+[true* .isPresent("DodgeObstacle", "leaving")] FAIR("Forward","entering") true and FAIR("CheckObstacle","entering") true
+
+(*Quand je sors de dodgingObstacle inévitablement je rentre dans Forward(TRUE)*) 
+(*[true* .isPresent("dodgingObstacle","leaving")] INEV("Forward","entering")*)
