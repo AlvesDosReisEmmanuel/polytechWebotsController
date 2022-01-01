@@ -1,0 +1,17 @@
+library 
+    macros.mcl
+end_library
+
+(*test4.ysc*)
+
+(*Quand je rentre dans DodgeObstacle éventuellement je rentre dans Forward (TRUE)*)
+(*[true* .isPresent("DodgeObstacle","entering")] FAIR("Forward","entering") true*)
+
+(*Quand je rentre dans dodgeVirtualWall éventuellement je rentre dans Forward (TRUE)*)
+(*[true* .isPresent("DodgeVirtualWall","leaving")] FAIR("Forward","entering") true*)
+
+(*Quand je rentre dans Forward éventuellement je rentre dans DodgeVirtualWall (TRUE)*)
+(*[true* .isPresent("Forward","entering")] FAIR("DodgeVirtualWall","entering") true*)
+
+(*Quand je rentre dans Forward éventuellement je rentre dans DodgeObstacle (TRUE)*)
+[true* .isPresent("Forward","entering")] FAIR("DodgeObstacle","entering") true
